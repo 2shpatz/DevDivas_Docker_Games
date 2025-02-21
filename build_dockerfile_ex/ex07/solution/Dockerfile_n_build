@@ -1,0 +1,33 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY ./src /app
+
+ENTRYPOINT ["python", "print_file.py"]
+
+
+
+build:
+docker build -f docker/Dockerfile -t file_reader . 
+
+run:
+docker run --rm -v /path/to/your/src:/app/src file_reader /app/src/file.txt
+
+
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY ./src /app
+
+ENTRYPOINT ["python", "print_file.py"]
+CMD ["/app/default_file.txt"]
+
+run using:
+docker run --rm -v /path/to/your/src:/app/src file_reader 
+
+and
+
+docker run --rm -v /path/to/your/src:/app/src file_reader /app/src/file.txt
+
