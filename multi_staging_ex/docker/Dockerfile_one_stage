@@ -1,0 +1,36 @@
+FROM openjdk:17-slim AS build
+
+WORKDIR /app
+
+# Install Maven to manage dependencies
+RUN apt-get update && apt-get install -y maven
+
+# Copy Java source files into the container
+COPY java/MainApp.java ./
+
+# Create a simple Maven project for dependency management
+RUN echo '<project xmlns="http://maven.apache.org/POM/4.0.0"' \
+         'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
+         'xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">' \
+         '<modelVersion>4.0.0</modelVersion>' \
+         '<groupId>com.example</groupId>' \
+         '<artifactId>large-java-app</artifactId>' \
+         '<version>1.0-SNAPSHOT</version>' \
+         '<dependencies>' \
+         '<dependency>' \
+         '<groupId>com.google.guava</groupId>' \
+         '<artifactId>guava</artifactId>' \
+         '<version>31.0.1-jre</version>' \
+         '</dependency>' \
+         '</dependencies>' \
+         '</project>' > pom.xml
+
+# Build with Maven to download dependencies
+RUN mvn dependency:resolve dependency:copy-dependencies -DoutputDirectory=target/dependency -DincludeScope=runtime
+
+# Compile the Java files
+RUN javac -cp "target/dependency/*:." MainApp.java
+
+# Set the classpath to include dependencies
+CMD ["java", "-cp", "target/dependency/*:.", "MainApp"]
+
